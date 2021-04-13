@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rutorrentflutter/api/api_conf.dart';
 import 'package:rutorrentflutter/api/api_requests.dart';
@@ -11,7 +12,6 @@ class RSSFeeds extends StatefulWidget {
 }
 
 class _RSSFeedsState extends State<RSSFeeds> {
-
   _getTotalFeeds(List<RSSLabel> rssLabelsList) {
     int feeds = 0;
     for (var rss in rssLabelsList) feeds += rss.items.length;
@@ -19,55 +19,74 @@ class _RSSFeedsState extends State<RSSFeeds> {
   }
 
   Future<void> _refreshState() async {
-    await Future.delayed(Duration(milliseconds: 500),(){});
-    setState(() {
-    });
+    await Future.delayed(Duration(milliseconds: 500), () {});
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Api>(
-      builder: (context,api,child) {
-        return Scaffold(
-          body: RefreshIndicator(
-            color: Theme.of(context).primaryColorLight,
-            onRefresh: _refreshState,
-            child: FutureBuilder(
-              future: ApiRequests.loadRSS(Provider.of<Api>(context)),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting &&
-                    !snapshot.hasData) {
-                  return ListTile(
-                    title: Text(
-                      'Loading...',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-                  );
-                }
-                List<RSSLabel> rssLabelsList = snapshot.data ?? [];
-                return Column(
-                  children: <Widget>[
-                    ListTile(
-                      title: Text(
-                        'All Feeds (${_getTotalFeeds(rssLabelsList)})',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                          itemCount: rssLabelsList.length,
-                          itemBuilder: (context, index) {
-                            return RSSLabelTile(rssLabelsList[index],_refreshState);
-                          }),
-                    ),
-                  ],
+    return Consumer<Api>(builder: (context, api, child) {
+      return Scaffold(
+        body: RefreshIndicator(
+          color: Theme.of(context).primaryColorLight,
+          onRefresh: _refreshState,
+          child: FutureBuilder(
+            future: ApiRequests.loadRSS(Provider.of<Api>(context)),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  !snapshot.hasData) {
+                return ListTile(
+                  title: Text(
+                    'Loading...',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
                 );
-              },
-            ),
+              }
+              List<RSSLabel> rssLabelsList = snapshot.data ?? [];
+              return Column(
+                children: <Widget>[
+                  ListTile(
+                    title: Text(
+                      'All Feeds (${_getTotalFeeds(rssLabelsList)})',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  (rssLabelsList.length != 0)
+                      ? Expanded(
+                          child: ListView.builder(
+                            itemCount: rssLabelsList.length,
+                            itemBuilder: (context, index) {
+                              return RSSLabelTile(
+                                  rssLabelsList[index], _refreshState);
+                            },
+                          ),
+                        )
+                      : Expanded(
+                          child: SingleChildScrollView(
+                            physics: AlwaysScrollableScrollPhysics(),
+                            child: Container(
+                              height: MediaQuery.of(context).size.height / 1.75,
+                              alignment: Alignment.center,
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  Theme.of(context).brightness ==
+                                          Brightness.light
+                                      ? 'assets/logo/empty.svg'
+                                      : 'assets/logo/empty_dark.svg',
+                                  width: 120,
+                                  height: 120,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                ],
+              );
+            },
           ),
-        );
-      }
-    );
+        ),
+      );
+    });
   }
 }

@@ -13,12 +13,17 @@ class FilterTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<GeneralFeatures>(builder: (context, general, child) {
       return Container(
-        color: general.selectedFilter == filter
+        color: (general.selectedFilter == filter && !general.isLabelSelected)
             ? Theme.of(context).disabledColor
             : null,
         child: ListTile(
           dense: true,
-          leading: Icon(icon,color: Provider.of<Mode>(context).isLightMode?Colors.black:Colors.white,),
+          leading: Icon(
+            icon,
+            color: Provider.of<Mode>(context).isLightMode
+                ? Colors.black
+                : Colors.white,
+          ),
           title: Text(
               filter.toString().substring(filter.toString().indexOf('.') + 1)),
           onTap: () {

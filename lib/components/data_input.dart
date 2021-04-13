@@ -5,21 +5,26 @@ import 'package:rutorrentflutter/models/mode.dart';
 
 class DataInput extends StatelessWidget {
   final String hintText;
+  final Color hintTextColor;
   final TextEditingController textEditingController;
   final FocusNode focus;
   final IconButton suffixIconButton;
   final onFieldSubmittedCallback;
   final textInputAction;
   final Color borderColor;
+  final String Function(String) validator;
 
-  DataInput(
-      {this.hintText,
-      this.textEditingController,
-      this.onFieldSubmittedCallback,
-      this.focus,
-      this.textInputAction,
-      this.suffixIconButton,
-      this.borderColor});
+  DataInput({
+    this.hintText,
+    this.hintTextColor,
+    this.textEditingController,
+    this.onFieldSubmittedCallback,
+    this.focus,
+    this.textInputAction,
+    this.suffixIconButton,
+    this.borderColor,
+    this.validator,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -38,12 +43,16 @@ class DataInput extends StatelessWidget {
                   ? Colors.black
                   : Colors.white,
           keyboardType: TextInputType.text,
+          validator: validator,
           decoration: InputDecoration(
             border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             hintText: hintText,
-            hintStyle: TextStyle(color: borderColor),
+            hintStyle: TextStyle(color: hintTextColor ?? borderColor),
             suffixIcon: suffixIconButton,
+            errorStyle: TextStyle(
+              fontSize: 16,
+            ),
           ),
         ),
         decoration: BoxDecoration(

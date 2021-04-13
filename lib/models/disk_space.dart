@@ -1,7 +1,7 @@
+import 'package:rutorrentflutter/models/general_features.dart';
 import 'package:rutorrentflutter/services/notifications.dart';
 
 class DiskSpace {
-
   /// Alert or Notification will be generated when the diskSpace is lower than [criticalPercentage]
   static int criticalPercentage = 10;
 
@@ -28,7 +28,10 @@ class DiskSpace {
 
   /// Generates Notification when percentage free on disk is less than [criticalPercentage]
   generateLowDiskSpaceAlert(Notifications notifications) async {
-    notifications.generate('Low Disk Space', 'You are low on disk space. Free some space');
+    notifications.generate(
+        'Low Disk Space',
+        'You are low on disk space. Free some space',
+        NotificationChannelID.LowDiskSpace);
     alertUser = false;
   }
 }

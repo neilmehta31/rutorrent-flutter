@@ -9,6 +9,8 @@ import 'package:rutorrentflutter/models/torrent.dart';
 import '../api/api_conf.dart';
 import 'package:rutorrentflutter/utilities/constants.dart';
 
+import 'custom_dialog.dart';
+
 class TorrentTile extends StatelessWidget {
   final Torrent torrent;
   TorrentTile(this.torrent);
@@ -18,13 +20,17 @@ class TorrentTile extends StatelessWidget {
       case Status.downloading:
         return Theme.of(context).primaryColor;
       case Status.paused:
-        return Provider.of<Mode>(context).isLightMode?kGreyDT:kGreyLT;
+        return Provider.of<Mode>(context).isLightMode ? kGreyDT : kGreyLT;
       case Status.stopped:
-        return Provider.of<Mode>(context).isLightMode?kGreyDT:kGreyLT;
+        return Provider.of<Mode>(context).isLightMode ? kGreyDT : kGreyLT;
       case Status.completed:
-        return Provider.of<Mode>(context).isLightMode ? kGreenActiveLT : kGreenActiveDT;
+        return Provider.of<Mode>(context).isLightMode
+            ? kGreenActiveLT
+            : kGreenActiveDT;
       case Status.errors:
-        return Provider.of<Mode>(context).isLightMode ? kGreenActiveLT : kRedErrorDT;
+        return Provider.of<Mode>(context).isLightMode
+            ? kGreenActiveLT
+            : kRedErrorDT;
     }
   }
 
@@ -42,11 +48,30 @@ class TorrentTile extends StatelessWidget {
     return Consumer<Api>(
       builder: (context, api, child) {
         return GestureDetector(
+          onLongPress: () {
+            showDialog(
+                context: context,
+                builder: (context) => CustomDialog(
+                      title: 'Remove Torrent',
+                      optionRightText: 'Remove Torrent and Delete Data',
+                      optionLeftText: 'Remove Torrent',
+                      optionRightOnPressed: () {
+                        ApiRequests.removeTorrentWithData(
+                            torrent.api, torrent.hash);
+                        Navigator.pop(context);
+                      },
+                      optionLeftOnPressed: () {
+                        ApiRequests.removeTorrent(torrent.api, torrent.hash);
+                        Navigator.pop(context);
+                      },
+                    ));
+          },
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(
-              builder: (context)=>TorrentDetailSheet(torrent)
-            ));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => TorrentDetailSheet(torrent)));
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
@@ -69,55 +94,64 @@ class TorrentTile extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
                               Flexible(
-                                  child: Text(
-                                torrent.name,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16),
-                              )),
+                                child: Text(
+                                  torrent.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16),
+                                ),
+                              ),
                               Flexible(
                                 child: Text(
                                   '${filesize(torrent.downloadedData)}${torrent.dlSpeed == 0 ? '' : ' | ' + torrent.getEta}',
                                   style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 10,),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 10,
+                                  ),
                                 ),
                               ),
                               Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8.0),
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: <Widget>[
                                         Text(
                                           '↓ ${filesize(torrent.dlSpeed.toString()) + '/s'} | ↑ ${filesize(torrent.ulSpeed.toString()) + '/s'}',
                                           style: TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 10,
-                                              ),
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 10,
+                                          ),
                                         ),
-                                        Provider.of<GeneralFeatures>(context).allAccounts?
-                                        Text(
-                                          '${Uri.parse(torrent.api.url).host}',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 10,
-                                             ),
-                                        ):Container(),
+                                        Provider.of<GeneralFeatures>(context)
+                                                .allAccounts
+                                            ? Text(
+                                                '${Uri.parse(torrent.api.url).host}',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 10,
+                                                ),
+                                              )
+                                            : Container(),
                                       ],
                                     ),
                                     SizedBox(
                                       height: 4,
                                     ),
                                     LinearProgressIndicator(
-                                      backgroundColor: Provider.of<Mode>(context).isLightMode?kGreyLT:kGreyDT,
-                                        value: torrent.percentageDownload / 100,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(statusColor),
-                                        ),
+                                      backgroundColor:
+                                          Provider.of<Mode>(context).isLightMode
+                                              ? kGreyLT
+                                              : kGreyDT,
+                                      value: torrent.percentageDownload / 100,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          statusColor),
+                                    ),
                                   ],
                                 ),
                               )
@@ -135,8 +169,7 @@ class TorrentTile extends StatelessWidget {
                         Text(
                           torrent.percentageDownload.toString() + '%',
                           style: TextStyle(
-                              color: statusColor,
-                              fontWeight: FontWeight.w700),
+                              color: statusColor, fontWeight: FontWeight.w700),
                         ),
                         IconButton(
                           color: statusColor,
